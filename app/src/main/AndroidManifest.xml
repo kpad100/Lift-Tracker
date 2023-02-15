@@ -9,8 +9,11 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.LiftTracker"
+        android:theme="@style/Theme.AppCompat.NoActionBar"
         tools:targetApi="31">
+        <activity
+            android:name=".NewWorkoutActivity"
+            android:exported="false" />
         <activity
             android:name=".about"
             android:exported="false" />

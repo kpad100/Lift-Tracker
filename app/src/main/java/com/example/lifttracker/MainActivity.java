@@ -1,6 +1,8 @@
 package com.example.lifttracker;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.animation.LayoutTransition;
 import android.content.Intent;
@@ -11,12 +13,15 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.example.lifttracker.Adapter.WorkoutDataAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity {
 
     TextView detailsText;
     LinearLayout cardLayout;
+    RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,16 +46,29 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-        detailsText = findViewById(R.id.details);
-        cardLayout = findViewById(R.id.cardLayout);
-        cardLayout.getLayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(),NewWorkoutActivity.class));
+                overridePendingTransition(0,0);
+            }
+        });
+
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setAdapter(new WorkoutDataAdapter(getApplicationContext(), DatabaseClass.getDatabase(getApplicationContext()).getDao().getAllData()));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+
+        //detailsText = findViewById(R.id.details);
+        //cardLayout = findViewById(R.id.cardLayout);
+//        cardLayout.getLayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
     }
 
-    public void expand(View view) {
+    /*public void expand(View view) {
         int visibility = (detailsText.getVisibility() == View.GONE) ? View.VISIBLE : View.GONE;
         AutoTransition autoTransition = new AutoTransition();
         autoTransition.setDuration(30);
         TransitionManager.beginDelayedTransition(cardLayout, autoTransition);
         detailsText.setVisibility(visibility);
-    }
+    }*/
 }

@@ -13,7 +13,11 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_navigation_menu" />
+        app:menu="@menu/bottom_navigation_menu"
+        app:backgroundTint="#303030"
+        app:itemIconTint="@color/teal_200"
+        app:itemTextColor="@color/teal_200"
+        />
 
     <TextView
         android:id="@+id/textView2"

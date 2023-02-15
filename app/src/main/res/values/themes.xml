@@ -13,4 +13,30 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
     </style>
+
+    <style name = "TextTableRowStyle">
+        <item name = "android:layout_width">wrap_content</item>
+        <item name = "android:layout_height">wrap_content</item>
+        <item name = "android:layout_weight">1</item>
+        <item name = "android:inputType">text</item>
+    </style>
+
+    <style name = "NumberTableRowStyle">
+        <item name = "android:layout_width">wrap_content</item>
+        <item name = "android:layout_height">wrap_content</item>
+        <item name = "android:layout_weight">1</item>
+        <item name = "android:inputType">number</item>
+    </style>
+
+    <style name="addVideoTableRowStyle">
+        <item name = "android:layout_width">wrap_content</item>
+        <item name = "android:layout_height">44dp</item>
+        <item name = "android:layout_weight">1</item>
+        <item name = "srcCompat">@drawable/add_circle_icon</item>
+    </style>
+
+    <style name="TableRowStyle">
+        <item name = "android:background">#5A595B</item>
+        <item name="android:padding">5dp</item>
+    </style>
 </resources>
