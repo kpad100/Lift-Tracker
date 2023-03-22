@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/detailsLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        android:padding="3dp"
+        >
+
+        <TextView
+            android:id="@+id/exerciseText"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="Power Snatch"
+            android:textSize="20sp"
+            />
+
+        <TextView
+            android:id="@+id/weightText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="135"
+            android:textSize="20sp"
+            android:layout_marginLeft="10dp"
+            />
+
+        <TextView
+            android:id="@+id/weightUnits"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="lb x "
+            android:textSize="20sp"
+            />
+
+        <TextView
+            android:id="@+id/repsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="8"
+            android:textSize="20sp"
+            />
+
+    </LinearLayout>

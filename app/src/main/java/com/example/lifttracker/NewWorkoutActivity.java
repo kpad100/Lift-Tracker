@@ -1,71 +1,64 @@
 package com.example.lifttracker;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TableLayout;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TableRow;
 import android.widget.Toast;
 
-import com.example.lifttracker.Adapter.WorkoutDataAdapter;
-import com.example.lifttracker.EntityClass.DataModel;
+import com.example.lifttracker.Adapter.WorkoutAdapter;
+import com.example.lifttracker.Adapter.WorkoutSetAdapter;
+import com.example.lifttracker.DB.DatabaseClass;
+import com.example.lifttracker.EntityClass.Workout;
+import com.example.lifttracker.EntityClass.WorkoutSet;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class NewWorkoutActivity extends AppCompatActivity {
 
-    EditText workoutNameText, exerciseText, weightText, repsText;
-    Button endWorkout;
+    LinearLayout parentLayout;
+    EditText workoutNameText;//, exerciseText, weightText, repsText;
+    Button endWorkout, addVideo;
+
+    List<Integer> workoutSetList = new ArrayList<>();
 
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_workout);
+        parentLayout = findViewById(R.id.newWorkoutParentLayout);
+        addNewView();
 
         String date_n = new SimpleDateFormat("MM/dd/YY", Locale.getDefault()).format(new Date());
-        EditText workoutName  = (EditText) findViewById(R.id.workoutNameText);
-        workoutName.setText("Workout " + date_n);
 
         workoutNameText = findViewById(R.id.workoutNameText);
-        exerciseText = findViewById(R.id.exerciseText);
-        weightText = findViewById(R.id.weightText);
-        repsText = findViewById(R.id.repsText);
+        workoutNameText.setText("Workout " + date_n);
         endWorkout = findViewById(R.id.endWorkoutButton);
 
         FloatingActionButton addSetButton = findViewById(R.id.addSetButton);
         addSetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ContextThemeWrapper textTableRowContext = new ContextThemeWrapper(getBaseContext(), R.style.TextTableRowStyle);
-                ContextThemeWrapper numberTableRowContext = new ContextThemeWrapper(getBaseContext(), R.style.NumberTableRowStyle);
-                ContextThemeWrapper tableRowContext = new ContextThemeWrapper(getBaseContext(), R.style.TableRowStyle);
-                ContextThemeWrapper addVideoContext = new ContextThemeWrapper(getBaseContext(), R.style.addVideoTableRowStyle);
-
-                TableRow row = new TableRow(tableRowContext);
-                //row.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT));
-
-                EditText exerciseText = new EditText(textTableRowContext);
-                EditText weightText = new EditText(numberTableRowContext);
-                EditText repsText = new EditText(numberTableRowContext);
-                ImageView addVideoIcon = new ImageView(addVideoContext);
-
-                row.addView(exerciseText);
-                row.addView(weightText);
-                row.addView(repsText);
-                row.addView(addVideoIcon);
-                TableLayout table = (TableLayout) findViewById(R.id.tableLayout);
-                table.addView(row);
+                addNewView();
             }
         });
 
@@ -77,31 +70,67 @@ public class NewWorkoutActivity extends AppCompatActivity {
                 overridePendingTransition(0,0);
             }
         });
+
+        BottomNavigationView bottomNavigationView=findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setSelectedItemId(R.id.workouts);
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.tutorial:
+                    startActivity(new Intent(getApplicationContext(),tutorial.class));
+                    overridePendingTransition(0,0);
+                    return true;
+                case R.id.about:
+                    startActivity(new Intent(getApplicationContext(),about.class));
+                    overridePendingTransition(0,0);
+                    return true;
+                case R.id.workouts:
+                    startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                    overridePendingTransition(0,0);
+                    return true;
+            }
+            return false;
+        });
+    }
+
+    private void addNewView() {
+        View row_workout_set_view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.row_workout_set, null);
+        parentLayout.addView(row_workout_set_view);
     }
 
     private void saveData() {
+        int counter = DatabaseClass.getDatabase(getApplicationContext()).getDao().getTotalNumWorkoutSets();
         String workoutNameTxt = workoutNameText.getText().toString().trim();
-        String exerciseTxt = exerciseText.getText().toString().trim();
-        String weightTxt = weightText.getText().toString().trim();
-        String repsTxt = repsText.getText().toString().trim();
+        int childCount = parentLayout.getChildCount();
+        View v;
+
+        for(int i = 0; i < childCount; i++) {
+            v = parentLayout.getChildAt(i);
+            Spinner exerciseSpinner = v.findViewById(R.id.exercise_spinner);
+            EditText weightEditText = v.findViewById(R.id.weightEditText);
+            EditText repsEditText = v.findViewById(R.id.repsEditText);
+            String exerciseTxt = exerciseSpinner.getSelectedItem().toString().trim();
+            int weightTxt = Integer.parseInt(weightEditText.getText().toString().trim());
+            int repsTxt = Integer.parseInt(repsEditText.getText().toString().trim());
+
+            counter++;
+            WorkoutSet set = new WorkoutSet(exerciseTxt, weightTxt, repsTxt);
+            DatabaseClass.getDatabase(getApplicationContext()).getDao().insertOrUpdateWorkoutSet(set);
+            workoutSetList.add(counter);
+        }
+
+        Workout workout = new Workout(workoutNameTxt, workoutSetList);
+        DatabaseClass.getDatabase(getApplicationContext()).getDao().insertOrUpdateWorkout(workout);
+
+        WorkoutAdapter workoutAdapter = new WorkoutAdapter(getApplicationContext(), DatabaseClass.getDatabase(getApplicationContext()).getDao().getAllWorkouts());
+        workoutAdapter.notifyDataSetChanged();
+
+        //WorkoutSetAdapter workoutSetAdapter = new WorkoutSetAdapter(getApplicationContext(), DatabaseClass.getDatabase(getApplicationContext()).getDao().getAll)
 
 
-        DataModel model = new DataModel();
-        model.setWorkoutName(workoutNameTxt);
-        model.setExercise(exerciseTxt);
-        model.setWeight(Integer.parseInt(weightTxt));
-        model.setReps(Integer.parseInt(repsTxt));
-
-        DatabaseClass.getDatabase(getApplicationContext()).getDao().insertAllData(model);
-
-        WorkoutDataAdapter adapter = new WorkoutDataAdapter(getApplicationContext(), DatabaseClass.getDatabase(getApplicationContext()).getDao().getAllData());
-        adapter.notifyDataSetChanged();
-
-
-        workoutNameText.setText("");
-        exerciseText.setText("");
+        /*workoutNameText.setText("");
+        exerciseEditText.setText("");
         weightText.setText("");
-        repsText.setText("");
+        repsText.setText("");*/
         Toast.makeText(this, "Data Successfully Saved", Toast.LENGTH_SHORT).show();
     }
 }

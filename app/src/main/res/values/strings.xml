@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Lift Tracker</string>
+
+    <string-array name="exercises">
+        <item>Back Squat</item>
+        <item>Bench Press</item>
+        <item>Deadlift</item>
+        <item>Front Squat</item>
+        <item>Power Clean</item>
+        <item>Squat Clean</item>
+        <item>Push Jerk</item>
+        <item>Power Snatch</item>
+        <item>Squat Snatch</item>
+    </string-array>
 </resources>

@@ -4,14 +4,11 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "workoutData")
-public class DataModel {
+@Entity(tableName = "workout_set_table")
+public class WorkoutSet {
 
     @PrimaryKey(autoGenerate = true)
-    private int key;
-
-    @ColumnInfo(name = "workoutName")
-    private String workoutName;
+    private int setId;
 
     @ColumnInfo(name = "exercise")
     private String exercise;
@@ -22,20 +19,25 @@ public class DataModel {
     @ColumnInfo(name = "reps")
     private int reps;
 
-    public int getKey() {
-        return key;
+    /*
+    @ColumnInfo(name = "videoPath")
+    private String videoPath;
+
+    // whatever metrics we decide on (velocity, acceleration, force, etc.)
+     */
+
+    public WorkoutSet(String exercise, int weight, int reps) {
+        this.exercise = exercise;
+        this.weight = weight;
+        this.reps = reps;
     }
 
-    public void setKey(int key) {
-        this.key = key;
+    public int getSetId() {
+        return setId;
     }
 
-    public String getWorkoutName() {
-        return workoutName;
-    }
-
-    public void setWorkoutName(String workoutName) {
-        this.workoutName = workoutName;
+    public void setSetId(int setId) {
+        this.setId = setId;
     }
 
     public String getExercise() {
@@ -61,11 +63,4 @@ public class DataModel {
     public void setReps(int reps) {
         this.reps = reps;
     }
-
-    /*
-    @ColumnInfo(name = "videoPath")
-    private String videoPath;
-
-    // whatever metrics we decide on (velocity, acceleration, force, etc.)
-     */
 }
