@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BottomNavigationView bottomNavigationView=findViewById(R.id.bottom_navigation);
+        /*BottomNavigationView bottomNavigationView=findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.workouts);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             switch (item.getItemId()) {
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
                     return true;
             }
             return false;
-        });
+        });*/
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -56,17 +56,5 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setAdapter(new WorkoutAdapter(getApplicationContext(), DatabaseClass.getDatabase(getApplicationContext()).getDao().getAllWorkouts()));
         recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-
-        //detailsText = findViewById(R.id.details);
-        //cardLayout = findViewById(R.id.cardLayout);
-//        cardLayout.getLayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
     }
-
-    /*public void expand(View view) {
-        int visibility = (detailsText.getVisibility() == View.GONE) ? View.VISIBLE : View.GONE;
-        AutoTransition autoTransition = new AutoTransition();
-        autoTransition.setDuration(30);
-        TransitionManager.beginDelayedTransition(cardLayout, autoTransition);
-        detailsText.setVisibility(visibility);
-    }*/
 }

@@ -1,5 +1,7 @@
 package com.example.lifttracker.DB;
 
+import android.net.Uri;
+
 import androidx.room.TypeConverter;
 
 import com.google.gson.Gson;

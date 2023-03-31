@@ -10,8 +10,8 @@ import androidx.room.TypeConverters;
 import com.example.lifttracker.EntityClass.Workout;
 import com.example.lifttracker.EntityClass.WorkoutSet;
 
-@Database(entities = {Workout.class, WorkoutSet.class}, version = 3)
-@TypeConverters({Converters.class})
+@Database(entities = {Workout.class, WorkoutSet.class}, version = 4)
+@TypeConverters({Converters.class, UriConverters.class})
 public abstract class DatabaseClass extends RoomDatabase {
 
     public abstract DaoClass getDao();

@@ -1,13 +1,20 @@
 package com.example.lifttracker;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,14 +38,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import android.Manifest;
 
 public class NewWorkoutActivity extends AppCompatActivity {
 
     LinearLayout parentLayout;
-    EditText workoutNameText;//, exerciseText, weightText, repsText;
+    EditText workoutNameText;
     Button endWorkout, addVideo;
 
     List<Integer> workoutSetList = new ArrayList<>();
+
+    private static int CAMERA_PERMISSION_CODE = 100;
+    private static int VIDEO_RECORD_CODE = 101;
+    private Uri videoPath;
+    List<Uri> videoPathList = new ArrayList<>();
+    int rowCount = 1;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -47,18 +61,21 @@ public class NewWorkoutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_new_workout);
         parentLayout = findViewById(R.id.newWorkoutParentLayout);
         addNewView();
+        getCameraPermission();
 
         String date_n = new SimpleDateFormat("MM/dd/YY", Locale.getDefault()).format(new Date());
 
         workoutNameText = findViewById(R.id.workoutNameText);
         workoutNameText.setText("Workout " + date_n);
         endWorkout = findViewById(R.id.endWorkoutButton);
+       // addVideo = findViewById(R.id.addVideoButton);
 
         FloatingActionButton addSetButton = findViewById(R.id.addSetButton);
         addSetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 addNewView();
+                rowCount++;
             }
         });
 
@@ -71,6 +88,14 @@ public class NewWorkoutActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.addVideoButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                recordVideo();
+            }
+        });
+
+        /*
         BottomNavigationView bottomNavigationView=findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.workouts);
         bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -90,6 +115,37 @@ public class NewWorkoutActivity extends AppCompatActivity {
             }
             return false;
         });
+        */
+    }
+
+    private void getCameraPermission() {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+        }
+    }
+
+    private void recordVideo() {
+        Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+        startActivityForResult(intent, VIDEO_RECORD_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == VIDEO_RECORD_CODE) {
+            if(resultCode == RESULT_OK) {
+                videoPath = data.getData();
+                videoPathList.add(videoPath);
+            }
+            else if(resultCode == RESULT_CANCELED){
+                Log.i("VIDEO_RECORD_TAG", "Recording video is canceled");
+            }
+            else {
+                Log.i("VIDEO_RECORD_TAG", "Recording video error");
+            }
+        }
+
     }
 
     private void addNewView() {
@@ -111,9 +167,13 @@ public class NewWorkoutActivity extends AppCompatActivity {
             String exerciseTxt = exerciseSpinner.getSelectedItem().toString().trim();
             int weightTxt = Integer.parseInt(weightEditText.getText().toString().trim());
             int repsTxt = Integer.parseInt(repsEditText.getText().toString().trim());
+            if(!videoPathList.isEmpty()) {
+                if(videoPathList.get(i) != null)
+                    videoPath = videoPathList.get(i);
+            }
 
             counter++;
-            WorkoutSet set = new WorkoutSet(exerciseTxt, weightTxt, repsTxt);
+            WorkoutSet set = new WorkoutSet(exerciseTxt, weightTxt, repsTxt, videoPath);
             DatabaseClass.getDatabase(getApplicationContext()).getDao().insertOrUpdateWorkoutSet(set);
             workoutSetList.add(counter);
         }
@@ -124,13 +184,6 @@ public class NewWorkoutActivity extends AppCompatActivity {
         WorkoutAdapter workoutAdapter = new WorkoutAdapter(getApplicationContext(), DatabaseClass.getDatabase(getApplicationContext()).getDao().getAllWorkouts());
         workoutAdapter.notifyDataSetChanged();
 
-        //WorkoutSetAdapter workoutSetAdapter = new WorkoutSetAdapter(getApplicationContext(), DatabaseClass.getDatabase(getApplicationContext()).getDao().getAll)
-
-
-        /*workoutNameText.setText("");
-        exerciseEditText.setText("");
-        weightText.setText("");
-        repsText.setText("");*/
         Toast.makeText(this, "Data Successfully Saved", Toast.LENGTH_SHORT).show();
     }
 }

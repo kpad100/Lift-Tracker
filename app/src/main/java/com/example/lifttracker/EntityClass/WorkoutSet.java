@@ -1,8 +1,14 @@
 package com.example.lifttracker.EntityClass;
 
+import android.net.Uri;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
+
+import com.example.lifttracker.DB.Converters;
+import com.example.lifttracker.DB.UriConverters;
 
 @Entity(tableName = "workout_set_table")
 public class WorkoutSet {
@@ -19,17 +25,18 @@ public class WorkoutSet {
     @ColumnInfo(name = "reps")
     private int reps;
 
-    /*
+
     @ColumnInfo(name = "videoPath")
-    private String videoPath;
+    @TypeConverters({UriConverters.class})
+    private Uri videoPath;
 
     // whatever metrics we decide on (velocity, acceleration, force, etc.)
-     */
 
-    public WorkoutSet(String exercise, int weight, int reps) {
+    public WorkoutSet(String exercise, int weight, int reps, Uri videoPath) {
         this.exercise = exercise;
         this.weight = weight;
         this.reps = reps;
+        this.videoPath = videoPath;
     }
 
     public int getSetId() {
@@ -62,5 +69,13 @@ public class WorkoutSet {
 
     public void setReps(int reps) {
         this.reps = reps;
+    }
+
+    public Uri getVideoPath() {
+        return videoPath;
+    }
+
+    public void setVideoPath(Uri videoPath) {
+        this.videoPath = videoPath;
     }
 }
