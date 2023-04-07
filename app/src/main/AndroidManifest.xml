@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
@@ -15,6 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LiftTracker"
         tools:targetApi="31">
+        <activity
+            android:name=".RecordVideoActivity"
+            android:exported="false" />
         <activity
             android:name=".NewWorkoutActivity"
             android:exported="false" />
