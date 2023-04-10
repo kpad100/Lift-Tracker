@@ -1,9 +1,11 @@
 package com.example.lifttracker.Adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -47,11 +49,6 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.ViewHold
             workoutSetList.add(DatabaseClass.getDatabase(context).getDao().getWorkoutSetById(workoutSetIdList.get(i)));
 
         holder.workoutSetRecyclerView.setAdapter(new WorkoutSetAdapter(workoutSetList, context));
-
-
-        /*holder.exerciseText.setText(workoutList.get(position).getExercise());
-        holder.weightText.setText(workoutList.get(position).getWeight() + "");
-        holder.repsText.setText(workoutList.get(position).getReps() + "");*/
     }
 
     @Override
@@ -60,7 +57,7 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.ViewHold
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        private TextView workoutNameText; //, exerciseText, weightText, repsText;
+        private TextView workoutNameText;
         private RecyclerView workoutSetRecyclerView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -70,10 +67,6 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.ViewHold
             workoutSetRecyclerView = itemView.findViewById(R.id.workout_set_recycler_view);
             workoutSetRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
             itemView.setOnClickListener(this);
-
-            /*exerciseText = itemView.findViewById(R.id.exerciseText);
-            weightText = itemView.findViewById(R.id.weightText);
-            repsText = itemView.findViewById(R.id.repsText);*/
         }
 
         @Override
