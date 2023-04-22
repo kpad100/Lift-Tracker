@@ -6,6 +6,10 @@ android {
     namespace 'com.example.lifttracker'
     compileSdk 33
 
+    aaptOptions {
+        noCompress "tflite"
+    }
+
     defaultConfig {
         applicationId "com.example.lifttracker"
         minSdk 24
@@ -26,10 +30,20 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    buildFeatures {
+        mlModelBinding true
+    }
 }
 
 dependencies {
+    implementation 'com.google.mlkit:object-detection:17.0.0'
+    //implementation 'org.tensorflow:tensorflow-lite-support:0.3.1'
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.3.1'
+    //implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
     def room_version = "2.5.0"
+
+    implementation 'org.tensorflow:tensorflow-lite-task-vision:0.3.1'
+    implementation 'org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.3.1'
 
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
