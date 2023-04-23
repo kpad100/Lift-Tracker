@@ -56,20 +56,13 @@ public class NewWorkoutActivity extends AppCompatActivity {
         endWorkout = findViewById(R.id.endWorkoutButton);
 
         FloatingActionButton addSetButton = findViewById(R.id.addSetButton);
-        addSetButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                addNewView();
-            }
-        });
+        addSetButton.setOnClickListener(view -> addNewView());
 
-        endWorkout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                saveData();
-                startActivity(new Intent(getApplicationContext(),MainActivity.class));
-                overridePendingTransition(0,0);
-            }
+        endWorkout.setOnClickListener(view -> {
+            saveData();
+
+            startActivity(new Intent(getApplicationContext(),MainActivity.class));
+            overridePendingTransition(0,0);
         });
 
         /*
@@ -97,12 +90,7 @@ public class NewWorkoutActivity extends AppCompatActivity {
 
     private void addNewView() {
         View row_workout_set_view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.row_workout_set, null);
-        row_workout_set_view.findViewById(R.id.addVideoButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                launchRecordVideoActivity();
-            }
-        });
+        row_workout_set_view.findViewById(R.id.addVideoButton).setOnClickListener(view -> launchRecordVideoActivity());
         parentLayout.addView(row_workout_set_view);
     }
 

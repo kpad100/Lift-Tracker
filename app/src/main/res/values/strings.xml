@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Lift Tracker</string>
+    <string name="weight">Weight</string>
+    <string name="reps">Reps</string>
+    <string name="add_video">Add Video</string>
 
     <string-array name="exercises">
         <item>Back Squat</item>
