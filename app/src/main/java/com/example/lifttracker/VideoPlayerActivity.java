@@ -2,11 +2,14 @@ package com.example.lifttracker;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -17,9 +20,21 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.MediaController;
 import android.widget.Toast;
 import android.widget.VideoView;
+
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.GridLabelRenderer;
+import com.jjoe64.graphview.LegendRenderer;
+import com.jjoe64.graphview.Viewport;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.DataPointInterface;
+import com.jjoe64.graphview.series.LineGraphSeries;
+import com.jjoe64.graphview.series.OnDataPointTapListener;
+import com.jjoe64.graphview.series.Series;
 
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.support.image.TensorImage;
@@ -32,16 +47,23 @@ import java.util.ArrayList;
 
 public class VideoPlayerActivity extends AppCompatActivity {
     private VideoView videoView;
+    private LinearLayout videoLayout;
+    private GraphView graph;
     private ArrayList<RectF> boundingBoxList;
+    private ArrayList<Float> timeList = new ArrayList<>();
+    private Analyze analyzer;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_player);
 
         boundingBoxList = new ArrayList<>();
-
+        graph = findViewById(R.id.graph);
+        videoLayout = findViewById(R.id.videoLayout);
         videoView = findViewById(R.id.videoView);
+
         Intent intent = getIntent();
         Uri videoFilePath = intent.getData();
         videoView.setVideoURI(videoFilePath);
@@ -51,21 +73,11 @@ public class VideoPlayerActivity extends AppCompatActivity {
         mediaController.setMediaPlayer(videoView);
         videoView.setMediaController(mediaController);
 
-        videoView.start();
-
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(getApplicationContext(), videoFilePath);
+        long videoDuration = Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
 
-        /*String widthString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
-        String heightString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
-        videoWidth = Integer.parseInt(widthString);
-        videoHeight = Integer.parseInt(heightString);*/
-
-        // Set up a Paint object to draw the bounding box
-        Paint paint = new Paint();
-        paint.setColor(Color.RED);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(5.0f);
+        Toast.makeText(this, "Processing", Toast.LENGTH_LONG).show();
 
         // Set up a Handler to run the object detection model on a separate thread
         HandlerThread handlerThread = new HandlerThread("ObjectDetectionThread");
@@ -73,20 +85,22 @@ public class VideoPlayerActivity extends AppCompatActivity {
         Handler handler = new Handler(handlerThread.getLooper());
         handler.post(() -> {
             // Loop over each frame of the video and draw the bounding box
-            long videoDuration = Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
-            int frameInterval = 375;
+            int frameInterval = 500;
             for (int i = 0; i < videoDuration; i += frameInterval) {
                 // Get the current video frame as a Bitmap
                 Bitmap frameBitmap = retriever.getFrameAtTime(i * 1000L);
                 frameBitmap = frameBitmap.copy(Bitmap.Config.ARGB_8888, true);
                 try {
-                    runObjectDetection(frameBitmap);
+                    runObjectDetection(frameBitmap, (float) i/1000);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
 
+            analyzer = new Analyze(boundingBoxList, timeList, 0.3);
             String coordinates = "";
+            String velocities = "";
+            String accelerations = "";
             for(int i = 0; i < boundingBoxList.size(); i++) {
                 RectF box = boundingBoxList.get(i);
                 float x = box.centerX();
@@ -95,20 +109,97 @@ public class VideoPlayerActivity extends AppCompatActivity {
                 String cords = "(" + x + ", " + y + ")";
                 coordinates += ", ";
                 coordinates += cords;
+
+                velocities += ", ";
+                velocities += analyzer.getVelocityArr()[i];
+
+                accelerations += ", ";
+                accelerations += analyzer.getAccelArr()[i];
             }
 
             String finalCoordinates = coordinates;
-            runOnUiThread(() -> System.out.println(finalCoordinates));
+            System.out.println(finalCoordinates);
+            System.out.println(velocities);
+            System.out.println(accelerations);
 
+            drawGraph();
+            videoView.setForeground(null);
+            videoView.start();
         });
     }
 
-    private void runObjectDetection(Bitmap bitmap) throws IOException {
+    private void drawGraph() {
+        float maxVal = 0;
+        float minVal = 100;
+        float[] velocityArr = analyzer.getVelocityArr();
+        float[] accelArr = analyzer.getAccelArr();
+        LineGraphSeries<DataPoint> velocitySeries = new LineGraphSeries();
+        LineGraphSeries<DataPoint> accelSeries = new LineGraphSeries();
+
+        velocitySeries.setColor(Color.RED);
+        velocitySeries.setTitle("Velocity (m/s)");
+        velocitySeries.setThickness(5);
+        accelSeries.setColor(Color.BLUE);
+        accelSeries.setTitle("Acceleration (m/s^2)");
+        accelSeries.setThickness(5);
+        /*velocitySeries.setDrawDataPoints(true);
+        accelSeries.setDrawDataPoints(true);
+        velocitySeries.setDataPointsRadius(5);
+        accelSeries.setDataPointsRadius(5);*/
+
+        for(int i = 0; i < timeList.size(); i++) {
+            float velocity = velocityArr[i];
+            if(velocity > maxVal) maxVal = velocity;
+            if(velocity < minVal) minVal = velocity;
+            velocitySeries.appendData(new DataPoint(timeList.get(i), velocity), false, velocityArr.length);
+        }
+
+        for(int i = 1; i < timeList.size(); i++) {
+            float acceleration = accelArr[i];
+            if(acceleration > maxVal) maxVal = acceleration;
+            if(acceleration < minVal) minVal = acceleration;
+            accelSeries.appendData(new DataPoint(timeList.get(i), acceleration), false, accelArr.length);
+        }
+
+        graph.addSeries(velocitySeries);
+        graph.addSeries(accelSeries);
+
+        GridLabelRenderer gridLabel = graph.getGridLabelRenderer();
+        gridLabel.setHorizontalAxisTitle("Time (s)");
+        gridLabel.setHorizontalAxisTitleTextSize(40);
+        graph.getLegendRenderer().setVisible(true);
+        graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
+        graph.getViewport().setScalable(true);
+        //graph.getViewport().setScalableY(true);
+        graph.getViewport().setXAxisBoundsManual(true);
+        graph.getViewport().setMinX(0);
+        graph.getViewport().setMaxX(timeList.get(timeList.size()-1));
+        graph.getViewport().setYAxisBoundsManual(true);
+        graph.getViewport().setMinY(minVal - 0.5);
+        graph.getViewport().setMaxY((int)maxVal + 2);
+
+        velocitySeries.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                Toast.makeText(getApplicationContext(), "Velocity at " + dataPoint.getX() + "s = " + ((double)dataPoint.getY()) + " m/s", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        accelSeries.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                Toast.makeText(getApplicationContext(), "Acceleration at " + dataPoint.getX() + "s = " + ((double)dataPoint.getY()) + " m/s^2", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void runObjectDetection(Bitmap bitmap, float time) throws IOException {
         // Initialization
         ObjectDetector.ObjectDetectorOptions options =
                 ObjectDetector.ObjectDetectorOptions.builder()
                         .setBaseOptions(BaseOptions.builder().build())
                         .setMaxResults(1)
+                        .setScoreThreshold(0.5f)
                         .build();
         ObjectDetector objectDetector =
                 ObjectDetector.createFromFileAndOptions(
@@ -117,16 +208,28 @@ public class VideoPlayerActivity extends AppCompatActivity {
         TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
         tensorImage.load(bitmap);
 
-        Detection detectionResult = objectDetector.detect(tensorImage).get(0);
+        if(!objectDetector.detect(tensorImage).isEmpty()) {
+            Detection detectionResult = objectDetector.detect(tensorImage).get(0);
 
-        RectF boundingBox = detectionResult.getBoundingBox();
-        boundingBoxList.add(boundingBox);
+            RectF boundingBox = detectionResult.getBoundingBox();
 
-        Bitmap imgWithResult = drawDetectionResult(bitmap, detectionResult);
-        runOnUiThread(() -> {
-            Drawable d = new BitmapDrawable(getResources(), imgWithResult);
-            videoView.setForeground(d);
-        });
+        /*if(boundingBoxList.size() > 0) {
+            if(!boundingBox.equals(boundingBoxList.get(boundingBoxList.size()-1))) {
+                boundingBoxList.add(boundingBox);
+                timeList.add(time);
+            }
+        }*/
+            //else {
+            boundingBoxList.add(boundingBox);
+            timeList.add(time);
+            //}
+
+            Bitmap imgWithResult = drawDetectionResult(bitmap, detectionResult);
+            runOnUiThread(() -> {
+                Drawable d = new BitmapDrawable(getResources(), imgWithResult);
+                videoView.setForeground(d);
+            });
+        }
     }
 
     private Bitmap drawDetectionResult(Bitmap bitmap, Detection result) {
