@@ -140,7 +140,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
         velocitySeries.setTitle("Velocity (m/s)");
         velocitySeries.setThickness(5);
         accelSeries.setColor(Color.BLUE);
-        accelSeries.setTitle("Acceleration (m/s^2)");
+        accelSeries.setTitle("Δ Acceleration (m/s^2)");
         accelSeries.setThickness(5);
         /*velocitySeries.setDrawDataPoints(true);
         accelSeries.setDrawDataPoints(true);

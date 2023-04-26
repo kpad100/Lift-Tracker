@@ -67,21 +67,18 @@ public class Analyze {
         for(int i = 1; i < time.size(); i++) {
             double distDiff = positionY[i-1] - positionY[i];
             float timeDiff = time.get(i) - time.get(i-1);
-            velocityArr[i] = (float) (distDiff / timeDiff);
-        }
-
-        ArrayList<Float> velocityList = new ArrayList<>();
-        for(int i = 1; i < velocityArr.length; i++) {
-
+            float velocityDiff = (float) (distDiff / timeDiff);
+            velocityArr[i] = velocityArr[i-1] + velocityDiff;
         }
     }
 
     private void calculateAccel() {
-        accelArr[0] = 0;
+        accelArr[0] = (float) 0;
         for(int i = 1; i < time.size(); i++) {
             float velocityDiff = velocityArr[i] - velocityArr[i-1];
             float timeDiff = time.get(i) - time.get(i-1);
-            accelArr[i] = velocityDiff / timeDiff;
+            float accelDiff = velocityDiff / timeDiff;
+            accelArr[i] = accelArr[i-1] + accelDiff;
         }
     }
 
